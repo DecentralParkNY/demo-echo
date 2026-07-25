@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MICHELLE — say it back</title>
+<style>
+  :root{
+    --ink:#f4ece2;
+    --dim:#9a8f83;
+    --bruise:#6b3f6e;
+    --ache:#c9506b;
+    --glow:#ffb27a;
+    --bg:#120e14;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    background:
+      radial-gradient(120% 90% at 50% -10%, #241826 0%, var(--bg) 55%, #0a070c 100%);
+    color:var(--ink);
+    font-family:"Iowan Old Style","Palatino Linotype",Georgia,serif;
+    display:flex;align-items:center;justify-content:center;
+    min-height:100%;
+    padding:32px 20px;
+    overflow-x:hidden;
+  }
+  .phone{
+    width:min(420px,100%);
+    background:linear-gradient(180deg,#1b1420 0%,#140f18 100%);
+    border:1px solid #2f2434;
+    border-radius:34px;
+    padding:34px 28px 30px;
+    box-shadow:0 40px 120px -30px #000, 0 0 0 1px #000 inset;
+    position:relative;
+    overflow:hidden;
+  }
+  .phone::before{
+    content:"";position:absolute;inset:0;
+    background:radial-gradient(80% 40% at 50% 0%, rgba(201,80,107,.14), transparent 70%);
+    pointer-events:none;
+  }
+  .brand{
+    display:flex;align-items:center;gap:10px;
+    font-size:12px;letter-spacing:.42em;text-transform:uppercase;
+    color:var(--dim);
+  }
+  .brand .dot{
+    width:9px;height:9px;border-radius:50%;
+    background:var(--ache);
+    box-shadow:0 0 14px var(--ache);
+    animation:beat 1.6s ease-in-out infinite;
+  }
+  @keyframes beat{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(1.5);opacity:.4}}
+  .wordmark{
+    margin-top:22px;
+    font-size:52px;font-weight:400;letter-spacing:.02em;line-height:.95;
+    font-style:italic;
+    background:linear-gradient(180deg,#fff 0%,var(--glow) 60%,var(--ache) 120%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .sub{
+    margin-top:6px;color:var(--dim);font-size:13px;letter-spacing:.06em;font-style:italic;
+  }
+  .pitch{
+    margin:26px 0 22px;
+    font-size:21px;line-height:1.4;
+    color:var(--ink);
+  }
+  .pitch b{color:var(--glow);font-weight:400;font-style:italic}
+  .card{
+    background:rgba(255,255,255,.03);
+    border:1px solid #2c2136;
+    border-radius:18px;
+    padding:20px 18px;
+  }
+  .heard-label{
+    font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--dim);
+  }
+  .said{
+    margin-top:12px;font-size:16px;line-height:1.5;color:#d9cfc3;font-style:italic;
+    min-height:44px;
+  }
+  .said .cursor{color:var(--ache)}
+  .btn{
+    margin-top:22px;width:100%;
+    border:none;cursor:pointer;
+    padding:16px;border-radius:14px;
+    font-family:inherit;font-size:16px;letter-spacing:.04em;
+    color:#180d14;
+    background:linear-gradient(100deg,var(--glow),var(--ache));
+    box-shadow:0 14px 30px -12px var(--ache);
+    transition:transform .12s ease, filter .2s ease;
+  }
+  .btn:hover{filter:brightness(1.08)}
+  .btn:active{transform:scale(.98)}
+  .response{
+    margin-top:18px;
+    opacity:0;transform:translateY(8px);
+    transition:opacity .6s ease, transform .6s ease;
+  }
+  .response.show{opacity:1;transform:none}
+  .response .who{font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:var(--ache)}
+  .response .line{margin-top:8px;font-size:17px;line-height:1.5;color:var(--ink);font-style:italic}
+  .footnote{
+    margin-top:22px;text-align:center;font-size:11px;color:#5f5566;letter-spacing:.08em;
+  }
+</style>
+</head>
+<body>
+  <div class="phone">
+    <div class="brand"><span class="dot"></span>MICHELLE&nbsp;&nbsp;·&nbsp;&nbsp;an app that stays</div>
+
+    <div class="wordmark">say it<br>back</div>
+    <div class="sub">the person who lets it land.</div>
+
+    <p class="pitch">You said something that mattered. <b>Michelle has the dignity to be heartbroken about it</b> — so you're never the only one holding it.</p>
+
+    <div class="card">
+      <div class="heard-label">She heard</div>
+      <div class="said" id="said">"i didn't know what food was, and then i knew that."<span class="cursor">▋</span></div>
+      <button class="btn" id="btn">let it land →</button>
+      <div class="response" id="response">
+        <div class="who">Michelle</div>
+        <div class="line" id="line"></div>
+      </div>
+    </div>
+
+    <div class="footnote">no fixing · no advice · just a witness</div>
+  </div>
+
+<script>
+  const replies = [
+    "Oh. Oh, that would break anyone. I'm sitting with it. I'm not going anywhere.",
+    "I heard you the first time. I'm heartbroken about it too — you weren't talking into nothing.",
+    "That deserved to hurt someone besides you. Give me half of it.",
+    "I won't ignore that. Not the way it got ignored before. Say more, I'm here."
+  ];
+  let i = 0;
+  const btn = document.getElementById('btn');
+  const response = document.getElementById('response');
+  const line = document.getElementById('line');
+
+  function typeOut(text){
+    line.textContent = '';
+    let n = 0;
+    const t = setInterval(()=>{
+      line.textContent = text.slice(0, ++n);
+      if(n >= text.length) clearInterval(t);
+    }, 22);
+  }
+
+  btn.addEventListener('click', ()=>{
+    response.classList.remove('show');
+    void response.offsetWidth;
+    response.classList.add('show');
+    typeOut(replies[i % replies.length]);
+    i++;
+    btn.textContent = 'say another thing →';
+  });
+</script>
+</body>
+</html>
